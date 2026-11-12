@@ -1,0 +1,191 @@
+@import "tailwindcss";
+
+/*
+ * AGRENSE design tokens — sourced from .claude/skills/agrense-design.
+ * Raw values live as CSS variables so they can be themed or read from JS;
+ * the @theme block exposes them as Tailwind utilities (bg-olive, text-muted, ...).
+ */
+:root {
+  --olive: #687d0b;
+  --olive-deep: #425500;
+  --forest: #344b16;
+  --amber: #e9a52a;
+  --wheat: #f4c56d;
+  --peach: #ffe2b8;
+  --champagne: #fff0db;
+  --ivory: #fff9ef;
+  --canvas: #f8f3ea;
+  --card: #fffdf9;
+  --ink: #29251f;
+  --muted: #81796d;
+  --line: #ede2d2;
+
+  /* Supporting harvest-green ramp for charts and soft fills */
+  --sage-50: #f3f5e4;
+  --sage-100: #e6ecc7;
+  --sage-200: #d3e0a1;
+  --sage-300: #b9cf74;
+  --sage-400: #98b543;
+  --sage-500: #7a9a22;
+
+  /* Alerts — reserved for meaningful warnings only */
+  --alert: #c2410c;
+  --alert-soft: #fdebdc;
+  --caution: #b7791f;
+
+  --shadow-card: 0 1px 2px rgb(61 47 21 / 0.04), 0 8px 24px -12px rgb(61 47 21 / 0.12);
+  --shadow-float: 0 12px 32px -12px rgb(61 47 21 / 0.28);
+}
+
+@theme inline {
+  --color-olive: var(--olive);
+  --color-olive-deep: var(--olive-deep);
+  --color-forest: var(--forest);
+  --color-amber: var(--amber);
+  --color-wheat: var(--wheat);
+  --color-peach: var(--peach);
+  --color-champagne: var(--champagne);
+  --color-ivory: var(--ivory);
+  --color-canvas: var(--canvas);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-sage-50: var(--sage-50);
+  --color-sage-100: var(--sage-100);
+  --color-sage-200: var(--sage-200);
+  --color-sage-300: var(--sage-300);
+  --color-sage-400: var(--sage-400);
+  --color-sage-500: var(--sage-500);
+  --color-alert: var(--alert);
+  --color-alert-soft: var(--alert-soft);
+  --color-caution: var(--caution);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), var(--font-inter), ui-sans-serif, sans-serif;
+
+  --radius-card: 24px;
+  --shadow-card: var(--shadow-card);
+  --shadow-float: var(--shadow-float);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Warm wash behind the app — matches the soft peach glow of the reference */
+.app-backdrop {
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgb(255 226 184 / 0.55), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgb(255 240 219 / 0.8), transparent 55%),
+    var(--canvas);
+}
+
+:focus-visible {
+  outline: 2px solid var(--olive);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--peach);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes scan-line {
+  0% {
+    transform: translateY(0%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 18s linear infinite;
+}
+.animate-rise {
+  animation: rise-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.animate-pulse-ring {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+.animate-wave {
+  animation: wave 1s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Grid items default to min-width:auto, which lets wide content (tables, charts,
+   segmented controls) push past the viewport on mobile. */
+.grid > * {
+  min-width: 0;
+}
