@@ -35,7 +35,7 @@ export function useAssistant(lang: Language) {
         const tools: ToolCall[] = [];
         for (const step of run.plan) {
           setThinking({ label: `${agent.TOOL_META[step.tool].label}…`, tool: step.tool });
-          const r = await agent.executeStep(step, query, { hasImage: !!image });
+          const r = await agent.executeStep(step, query, { hasImage: !!image, lang });
           results.push(r);
           tools.push({ tool: step.tool, input: step.input, output: r.output, ms: r.ms });
         }
@@ -56,7 +56,7 @@ export function useAssistant(lang: Language) {
         }
 
         setThinking({ label: "Writing a grounded answer…" });
-        const out = agent.synthesize(run, results, lang);
+        const out = await agent.synthesize(run, results, lang);
         const assistantMsg: ChatMessage = {
           id: uid("m"),
           role: "assistant",

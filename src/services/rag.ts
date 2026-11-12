@@ -1,16 +1,21 @@
 import { FALLBACK_ANSWER, KNOWLEDGE_BASE, type KnowledgeChunk } from "@/data/knowledge-base";
-import type { Citation, Language } from "@/lib/types";
+import type { Citation, Language, RagAnswer } from "@/lib/types";
 import { round } from "@/lib/utils";
 
 /**
  * Retrieval-augmented generation service.
- * The mock uses keyword and term-overlap scoring over the bundled corpus and
- * returns the pre-written grounded answer for the best chunk. In production:
- * embed the query → vector search → rerank → LLM generation with citations.
+ * - demo: keyword scoring over the bundled corpus with pre-written answers (no keys needed).
+ * - knowledge-base: POST /api/rag → Gemini embeddings + Supabase hybrid search + Gemini answer.
+ * Select with NEXT_PUBLIC_RAG_PROVIDER=supabase. If the server isn't configured,
+ * the remote service falls back to the demo corpus so the app keeps working.
  */
+export interface RagOptions {
+  crop?: string;
+  state?: string;
+}
+
 export interface RagService {
-  retrieve(query: string, k?: number): RetrievedChunk[];
-  answer(query: string, lang: Language): { text: string; citations: Citation[]; followUps: string[]; grounded: boolean };
+  answer(query: string, lang: Language, opts?: RagOptions): Promise<RagAnswer>;
 }
 
 export interface RetrievedChunk {
@@ -41,23 +46,50 @@ function score(query: string, chunk: KnowledgeChunk) {
   return s;
 }
 
-export const mockRagService: RagService = {
-  retrieve(query, k = 3) {
+export const demoRetriever = {
+  retrieve(query: string, k = 3): RetrievedChunk[] {
     return KNOWLEDGE_BASE.map((chunk) => ({ chunk, score: score(query, chunk) }))
       .filter((r) => r.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, k);
   },
-  answer(query, lang) {
-    const hits = this.retrieve(query);
+};
+
+export const mockRagService: RagService = {
+  async answer(query, lang) {
+    const hits = demoRetriever.retrieve(query);
     const top = hits[0];
     if (!top || top.score < 3) {
-      return { text: FALLBACK_ANSWER[lang], citations: [], followUps: ["How much nitrogen does wheat need?", "How do I fix acidic soil?", "Upload my Soil Health Card"], grounded: false };
+      return { text: FALLBACK_ANSWER[lang], citations: [], followUps: ["How much nitrogen does wheat need?", "How do I fix acidic soil?", "Upload my Soil Health Card"], grounded: false, backend: "demo" };
     }
     const max = top.score;
     const citations: Citation[] = hits
       .filter((h) => h.score >= max * 0.4)
       .map((h) => ({ id: h.chunk.id, title: h.chunk.title, source: h.chunk.source, snippet: h.chunk.text, score: round(Math.min(0.98, 0.55 + (h.score / (max + 2)) * 0.45), 2) }));
-    return { text: top.chunk.answer[lang], citations, followUps: top.chunk.followUps, grounded: true };
+    return { text: top.chunk.answer[lang], citations, followUps: top.chunk.followUps, grounded: true, backend: "demo" };
   },
 };
+
+let warnedNotConfigured = false;
+
+export const remoteRagService: RagService = {
+  async answer(query, lang, opts = {}) {
+    const res = await fetch("/api/rag", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, lang, crop: opts.crop, state: opts.state }),
+    });
+    if (res.ok) return (await res.json()) as RagAnswer;
+    const body = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
+    if (body.code === "not_configured") {
+      if (!warnedNotConfigured) {
+        console.warn(`[rag] ${body.error} Falling back to the demo corpus.`);
+        warnedNotConfigured = true;
+      }
+      return mockRagService.answer(query, lang, opts);
+    }
+    throw new Error(body.error ?? `Knowledge service error (${res.status})`);
+  },
+};
+
+export const ragService: RagService = process.env.NEXT_PUBLIC_RAG_PROVIDER === "supabase" ? remoteRagService : mockRagService;

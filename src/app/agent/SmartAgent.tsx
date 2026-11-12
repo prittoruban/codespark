@@ -39,7 +39,7 @@ export function SmartAgent() {
   const [run, setRun] = useState<AgentRun | null>(null);
   const [states, setStates] = useState<Record<string, StepState>>({});
   const [results, setResults] = useState<AgentStepResult[]>([]);
-  const [answer, setAnswer] = useState<ReturnType<typeof agent.synthesize> | null>(null);
+  const [answer, setAnswer] = useState<Awaited<ReturnType<typeof agent.synthesize>> | null>(null);
   const [busy, setBusy] = useState(false);
   const [phase, setPhase] = useState<"route" | "tools" | "synth" | "done" | null>(null);
 
@@ -58,14 +58,14 @@ export function SmartAgent() {
     const out: AgentStepResult[] = [];
     for (const step of r.plan) {
       setStates((s) => ({ ...s, [step.id]: "running" }));
-      const res = await agent.executeStep(step, q, { hasImage });
+      const res = await agent.executeStep(step, q, { hasImage, lang });
       out.push(res);
       setResults([...out]);
       setStates((s) => ({ ...s, [step.id]: "done" }));
     }
     setPhase("synth");
     await new Promise((r2) => setTimeout(r2, 600));
-    setAnswer(agent.synthesize(r, out, lang));
+    setAnswer(await agent.synthesize(r, out, lang));
     setPhase("done");
     setBusy(false);
   };

@@ -6,7 +6,7 @@ import { useAppState } from "@/lib/app-state";
 import type { ChatMessage } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { speak } from "@/services/voice";
-import { BookOpenCheck, Check, ChevronDown, Copy, Pause, Sparkles, ThumbsDown, ThumbsUp, Volume2, Wrench } from "lucide-react";
+import { BookOpenCheck, Check, ChevronDown, Copy, ExternalLink, Pause, Sparkles, ThumbsDown, ThumbsUp, Volume2, Wrench } from "lucide-react";
 import { useState } from "react";
 
 export function MessageBubble({ message, onFollowUp, speakingId, setSpeakingId }: { message: ChatMessage; onFollowUp: (q: string) => void; speakingId: string | null; setSpeakingId: (id: string | null) => void }) {
@@ -77,7 +77,14 @@ export function MessageBubble({ message, onFollowUp, speakingId, setSpeakingId }
                         </p>
                         <span className="shrink-0 text-[11px] text-muted">match {Math.round(c.score * 100)}%</span>
                       </div>
-                      <p className="mt-1 text-[12px] font-medium text-olive">{c.source}</p>
+                      <p className="mt-1 flex flex-wrap items-center gap-x-2 text-[12px] font-medium text-olive">
+                        {c.source}
+                        {c.url && (
+                          <a href={c.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-olive-deep underline-offset-2 hover:underline">
+                            View source <ExternalLink className="size-3" aria-hidden />
+                          </a>
+                        )}
+                      </p>
                       <p className="mt-1.5 text-[13px] leading-relaxed text-muted">“{c.snippet}”</p>
                     </li>
                   ))}

@@ -5,10 +5,10 @@
  */
 import { mockFertilizerService, type FertilizerService } from "./fertilizer";
 import { mockOcrService, type OcrService } from "./ocr";
-import { mockRagService, type RagService } from "./rag";
+import { ragService as selectedRag, type RagService } from "./rag";
 import { openMeteoWeatherService, simulatedWeatherService, type WeatherService } from "./weather";
 
-export const ragService: RagService = mockRagService;
+export const ragService: RagService = selectedRag; // NEXT_PUBLIC_RAG_PROVIDER=supabase for the real knowledge base
 export const ocrService: OcrService = mockOcrService;
 export const fertilizerService: FertilizerService = mockFertilizerService;
 export const weatherService: WeatherService =

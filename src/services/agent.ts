@@ -2,7 +2,8 @@ import { FARMS } from "@/data/farms";
 import type { AgentPlanStep, AgentRun, AgentStepResult, Farm, Language, ToolName } from "@/lib/types";
 import { formatINR, round, sleep, uid } from "@/lib/utils";
 import { computePlan } from "./fertilizer";
-import { mockRagService } from "./rag";
+import { ragService } from "./rag";
+import type { RagAnswer } from "@/lib/types";
 import { simulatedWeatherService, WEATHER_LOCATIONS } from "./weather";
 
 /**
@@ -52,6 +53,24 @@ export function resolveFarm(query: string): Farm {
   return FARMS[0];
 }
 
+/** Crop explicitly named in the question (lowercase), used to filter retrieval. */
+export function detectCrop(query: string): string | undefined {
+  return CROP_RE.find(([re]) => re.test(query))?.[1].toLowerCase();
+}
+
+// One knowledge-base call per question, shared by the tool step and the final answer.
+const ragCache = new Map<string, Promise<RagAnswer>>();
+function askKnowledgeBase(query: string, lang: Language) {
+  const key = `${lang}|${query}`;
+  if (!ragCache.has(key)) {
+    const p = ragService.answer(query, lang, { crop: detectCrop(query), state: "Tamil Nadu" });
+    p.catch(() => ragCache.delete(key)); // allow a retry after a failure
+    ragCache.set(key, p);
+    if (ragCache.size > 50) ragCache.delete(ragCache.keys().next().value!);
+  }
+  return ragCache.get(key)!;
+}
+
 function detectLanguage(q: string): Language {
   if (/[ऀ-ॿ]/.test(q)) return "hi";
   if (/[஀-௿]/.test(q)) return "ta";
@@ -97,7 +116,7 @@ export function route(query: string, opts: { hasImage?: boolean } = {}): AgentRu
 const nearestLocation = (farm: Farm) =>
   WEATHER_LOCATIONS.reduce((best, l) => (Math.hypot(l.lat - farm.lat, l.lon - farm.lon) < Math.hypot(best.lat - farm.lat, best.lon - farm.lon) ? l : best));
 
-export async function executeStep(step: AgentPlanStep, query: string, ctx: { hasImage?: boolean } = {}): Promise<AgentStepResult> {
+export async function executeStep(step: AgentPlanStep, query: string, ctx: { hasImage?: boolean; lang?: Language } = {}): Promise<AgentStepResult> {
   const t0 = Date.now();
   const farm = resolveFarm(query);
   await sleep(500 + Math.random() * 500);
@@ -131,8 +150,18 @@ export async function executeStep(step: AgentPlanStep, query: string, ctx: { has
       break;
     }
     case "knowledge_base": {
-      const hits = mockRagService.retrieve(query);
-      output = hits.length ? `Retrieved ${hits.length} passage${hits.length > 1 ? "s" : ""}. Top match: “${hits[0].chunk.title}” (${hits[0].chunk.source}).` : "No strongly matching passage found in the corpus.";
+      let rag: RagAnswer;
+      try {
+        rag = await askKnowledgeBase(query, ctx.lang ?? detectLanguage(query));
+      } catch {
+        output = "Knowledge service unavailable. Answering without retrieved passages.";
+        break;
+      }
+      const top = rag.citations[0];
+      const where = rag.backend === "demo" ? "demo corpus" : "knowledge base";
+      output = top
+        ? `Retrieved ${rag.citations.length} cited passage${rag.citations.length > 1 ? "s" : ""} from the ${where}. Top match: “${top.title}” (${top.source}).`
+        : `No passage in the ${where} answers this question.`;
       break;
     }
     case "market_prices": {
@@ -146,8 +175,13 @@ export async function executeStep(step: AgentPlanStep, query: string, ctx: { has
   return { stepId: step.id, output, data, ms: Date.now() - t0 };
 }
 
-export function synthesize(run: AgentRun, results: AgentStepResult[], lang: Language) {
-  const rag = mockRagService.answer(run.query, lang);
+export async function synthesize(run: AgentRun, results: AgentStepResult[], lang: Language) {
+  let rag: RagAnswer;
+  try {
+    rag = await askKnowledgeBase(run.query, lang);
+  } catch (err) {
+    rag = { text: err instanceof Error ? err.message : "The knowledge service is unavailable.", citations: [], followUps: [], grounded: false, backend: "knowledge-base" };
+  }
   const byTool = (t: ToolName) => results.find((r) => run.plan.find((p) => p.id === r.stepId)?.tool === t);
   const context: string[] = [];
   const w = byTool("weather");
