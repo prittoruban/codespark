@@ -168,6 +168,7 @@ export interface Citation {
   source: string;
   snippet: string;
   score: number;
+  url?: string; // link to the original document (knowledge-base answers)
 }
 
 export type ToolName = "knowledge_base" | "weather" | "soil_analysis" | "fertilizer_optimizer" | "disease_detection" | "market_prices";
@@ -237,4 +238,21 @@ export interface DiseaseResult {
   prevention: string[];
   modelVersion: string;
   inferenceMs: number;
+}
+
+/* ---------- RAG API (/api/rag) ---------- */
+
+export interface RagRequest {
+  query: string;
+  lang: Language;
+  crop?: string; // lowercase crop name to filter retrieval, e.g. "wheat"
+  state?: string; // e.g. "Tamil Nadu"
+}
+
+export interface RagAnswer {
+  text: string; // markdown with [n] markers matching citations[n-1]
+  citations: Citation[];
+  followUps: string[];
+  grounded: boolean;
+  backend: "knowledge-base" | "demo";
 }
