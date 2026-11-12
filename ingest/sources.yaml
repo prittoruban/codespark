@@ -1,0 +1,131 @@
+# AGRENSE knowledge-base manifest: starter corpus (compiled 2026-11-12).
+# Each URL was located on the publisher's own site. Re-check terms of use before
+# redistributing content. The fetcher obeys robots.txt and rate-limits requests.
+#
+# Sources: TNAU (Tamil Nadu agronomy), PPQS (pesticide approvals + DPPQS/NIPHM IPM packages),
+# ICAR (institute production guides), IMD (agromet bulletins, time-limited),
+# KVK (KVK-portal packages of practice), SHCP (Soil Health Card / soil health management scheme).
+
+defaults:
+  language: en
+  state: Tamil Nadu
+
+documents:
+  # ======================================================================
+  # PPQS: Major Uses of Pesticides (CIB&RC approved crop/pest/dose), as on 30.09.2026
+  # The ONLY source the answer pipeline accepts for pesticide doses.
+  # ======================================================================
+  - { source: PPQS, topic: pest, state: null, published_on: 2026-09-30, title: "Major uses of insecticides (CIB&RC), as on 30.09.2026", url: "https://ppqs.gov.in/sites/default/files/MUP%20%28insecticide%29%20%2030.09.2026.pdf" }
+  - { source: PPQS, topic: disease, state: null, published_on: 2026-09-30, title: "Major uses of fungicides (CIB&RC), as on 30.09.2026", url: "https://ppqs.gov.in/sites/default/files/Fungicide%20MUP%20%20as%20on%2030.09.2026.pdf" }
+  - { source: PPQS, topic: general, state: null, published_on: 2026-09-30, title: "Major uses of herbicides (CIB&RC), as on 30.09.2026", url: "https://ppqs.gov.in/sites/default/files/4.%20Herbicides%20MUP%20as%20on%2030.09.2026.pdf" }
+  - { source: PPQS, topic: pest, state: null, published_on: 2026-09-30, title: "Major uses of bio-insecticides (CIB&RC), as on 30.09.2026", url: "https://ppqs.gov.in/sites/default/files/MUP%20%28bio%20insecticide%29%2030.09.2026.pdf" }
+  - { source: PPQS, topic: disease, state: null, published_on: 2026-09-30, title: "Major uses of bio-fungicides (CIB&RC), as on 30.09.2026", url: "https://ppqs.gov.in/sites/default/files/3.%20bio%20fungicides%20MUP%20as%20on%2030.09.2026.pdf" }
+  - { source: PPQS, topic: general, state: null, published_on: 2026-09-30, title: "Major uses of plant growth regulators (CIB&RC), as on 30.09.2026", url: "https://ppqs.gov.in/sites/default/files/5.%20PGR%20MUP%20as%20on%2030.09.2026.pdf" }
+
+  # ======================================================================
+  # PPQS: AESA-based IPM packages (Directorate of PPQS, hosted by NIPHM)
+  # ======================================================================
+  - { source: PPQS, crop: paddy, topic: pest, state: null, title: "IPM package for rice (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Rice.pdf" }
+  - { source: PPQS, crop: wheat, topic: pest, state: null, title: "IPM package for wheat (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Wheat.pdf" }
+  - { source: PPQS, crop: maize, topic: pest, state: null, title: "IPM package for maize (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Maize.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for sorghum (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Sorghum.pdf" }
+  - { source: PPQS, crop: cotton, topic: pest, state: null, title: "IPM package for cotton (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Cotton.pdf" }
+  - { source: PPQS, crop: sugarcane, topic: pest, state: null, title: "IPM package for sugarcane (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Sugarcane.pdf" }
+  - { source: PPQS, crop: groundnut, topic: pest, state: null, title: "IPM package for groundnut (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Groundnut.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for mustard (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Mustard.pdf" }
+  - { source: PPQS, crop: pulses, topic: pest, state: null, title: "IPM package for redgram (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Redgram.pdf" }
+  - { source: PPQS, crop: pulses, topic: pest, state: null, title: "IPM package for chickpea (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Chickpea.pdf" }
+  - { source: PPQS, crop: tomato, topic: pest, state: null, title: "IPM package for tomato (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Tomato.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for brinjal (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Brinjal.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for chilli (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Chilli.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for onion (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Onion.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for potato (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Potato.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for okra (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Okra.pdf" }
+  - { source: PPQS, crop: banana, topic: pest, state: null, title: "IPM package for banana (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Banana.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for mango (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Mango.pdf" }
+  - { source: PPQS, crop: coconut, topic: pest, state: null, title: "IPM package for coconut (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Coconut.pdf" }
+  - { source: PPQS, topic: pest, state: null, title: "IPM package for turmeric (DPPQS/NIPHM)", url: "https://niphm.gov.in/IPMPackages/Turmeric.pdf" }
+
+  # ======================================================================
+  # TNAU Agritech Portal: field crops
+  # ======================================================================
+  - { source: TNAU, crop: paddy, topic: general, title: "Rice: crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice.html" }
+  - { source: TNAU, crop: paddy, topic: seeding, title: "Rice: seasons and varieties for Tamil Nadu (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_cropproduction_cereals_rice_varieties.html" }
+  - { source: TNAU, crop: paddy, topic: general, title: "Rice: System of Rice Intensification (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_cropproduction_rice_sri.html" }
+  - { source: TNAU, crop: paddy, topic: soil, title: "Rice: nutrient deficiency symptoms and correction (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_min_fldcrops_cereals_rice.html" }
+  - { source: TNAU, crop: paddy, topic: general, language: ta, title: "நெல் சாகுபடி தொழில்நுட்பங்கள் (TNAU)", url: "https://agritech.tnau.ac.in/ta/Agriculture/agri_cropproduction_cereals_rice_ta.html" }
+  - { source: TNAU, crop: maize, topic: general, title: "Maize: irrigated maize cultivation (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_maize_irrigated_maize.html" }
+  - { source: TNAU, crop: maize, topic: general, title: "Maize: rainfed maize cultivation (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/millets_maize_rainfed_maize.html" }
+  - { source: TNAU, crop: sugarcane, topic: general, title: "Sugarcane: crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/sugarcrops_sugarcane.html" }
+  - { source: TNAU, crop: pulses, topic: general, title: "Redgram: crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/CropProduction/Pulses/pulses_redgram.html" }
+  - { source: TNAU, crop: pulses, topic: general, title: "Blackgram: crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/pulses_blackgram.html" }
+  - { source: TNAU, crop: pulses, topic: soil, title: "Redgram: nutrient deficiency symptoms (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_min_fldcrops_pulses_redgram.html" }
+  - { source: TNAU, crop: groundnut, topic: general, title: "Groundnut: crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/CropProduction/Oilseeds/oilseeds_groundnut01.html" }
+  - { source: TNAU, crop: groundnut, topic: fertilizer, title: "Groundnut: nutrient management (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/crop_prot_crop_grounnut_nutrient%20mgmt.html" }
+  - { source: TNAU, topic: general, title: "Gingelly (sesame): crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/CropProduction/Oilseeds/oilseeds_gingelly.html" }
+  - { source: TNAU, topic: general, title: "Sunflower: crop production practices (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/CropProduction/Oilseeds/oilseeds_sunflower.html" }
+  - { source: TNAU, crop: cotton, topic: general, title: "Cotton: irrigated cotton cultivation (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_cropproduction_irrigation_cotton.html" }
+  - { source: TNAU, crop: cotton, topic: general, title: "Cotton: rainfed cotton cultivation (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_cropproduction_rainfed_cotton.html" }
+
+  - { source: TNAU, topic: general, title: "Tamil Nadu Crop Production Guide 2020: agriculture (Directorate of Agriculture, TN)", published_on: 2020-01-01, url: "https://agritech.tnau.ac.in/pdf/AGRICULTURE.pdf" }
+
+  # TNAU: cross-cutting nutrient, irrigation, weed and soil guidance
+  - { source: TNAU, topic: fertilizer, title: "Nutrient management for field crops (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_nutrientmgt_nutrientmgtforfieldcrops.html" }
+  - { source: TNAU, topic: fertilizer, title: "Integrated nutrient management (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_nutrientmgt_integrntrientmgt.html" }
+  - { source: TNAU, topic: fertilizer, title: "Tips for better fertilizer use efficiency (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_nutrientmgt_tipsforbetterfertilizeruse.html" }
+  - { source: TNAU, topic: irrigation, title: "Critical crop stages for irrigation (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_irrigationmgt_criticalstage.html" }
+  - { source: TNAU, topic: irrigation, title: "Irrigation management for field crops (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_irrigationmgt_fieldcrops.html" }
+  - { source: TNAU, topic: general, title: "Weed management in field crops (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_weedmgt_fieldcrops.html" }
+  - { source: TNAU, topic: soil, title: "Soil Health Card: purpose and use (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_soil_soilhealthcard.html" }
+  - { source: TNAU, topic: soil, title: "Soil test rating chart (TNAU)", url: "https://agritech.tnau.ac.in/agriculture/agri_soil_rating.html" }
+  - { source: TNAU, topic: soil, title: "Problem soils and their management (TNAU)", url: "https://agritech.tnau.ac.in/pdf/3.pdf" }
+
+  # TNAU: horticulture
+  - { source: TNAU, crop: banana, topic: general, title: "Banana: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_fruits_banana.html" }
+  - { source: TNAU, topic: general, title: "Mango: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_fruits_mango.html" }
+  - { source: TNAU, crop: coconut, topic: general, title: "Coconut: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_plantation%20crops_coconut.html" }
+  - { source: TNAU, topic: general, title: "Turmeric: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_spice%20crops_turmeric.html" }
+  - { source: TNAU, crop: tomato, topic: general, title: "Tomato: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_vegetables_tomato_index.html" }
+  - { source: TNAU, topic: general, title: "Brinjal: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_vegetables_brinjal_index.html" }
+  - { source: TNAU, topic: general, title: "Potato: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_vegetables_potato.html" }
+  - { source: TNAU, topic: general, title: "Small onion: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_vegetables_small%20onion.html" }
+  - { source: TNAU, topic: general, title: "Cabbage: cultivation practices (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/horti_vegetables_cabbage.html" }
+  - { source: TNAU, topic: fertilizer, title: "Fertilizer schedule for vegetable crops (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20VEGETABLES.pdf" }
+  - { source: TNAU, topic: fertilizer, title: "Fertilizer schedule for fruit crops (TNAU)", url: "https://agritech.tnau.ac.in/horticulture/FERTILIZER%20SCHEDULE%20FOR%20FRUIT%20CROPS.pdf" }
+
+  # TNAU: integrated pest management
+  - { source: TNAU, topic: pest, title: "Integrated pest management packages (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_integrated_pest_management_package.html" }
+  - { source: TNAU, crop: cotton, topic: pest, title: "Cotton: integrated pest management (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_ipm_cotton.html" }
+  - { source: TNAU, crop: sugarcane, topic: pest, title: "Sugarcane: integrated pest management (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_ipm_sugarcane.html" }
+  - { source: TNAU, topic: pest, title: "Millets: integrated pest management (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_ipm_millets.html" }
+  - { source: TNAU, crop: pulses, topic: pest, title: "Redgram: integrated pest management (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_ipm_redgram.html" }
+  - { source: TNAU, crop: banana, topic: pest, title: "Banana: integrated pest management (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_ipm_banana.html" }
+  - { source: TNAU, topic: pest, title: "Mango: integrated pest management (TNAU)", url: "https://agritech.tnau.ac.in/crop_protection/crop_prot_ipm_mango.html" }
+
+  # ======================================================================
+  # ICAR institutes: national production guides
+  # ======================================================================
+  - { source: ICAR, crop: wheat, topic: general, state: null, title: "Wheat cultivation in India: pocket guide (ICAR-DWR, now IIWBR)", url: "https://www.nitiforstates.gov.in/public-assets/Best_Practices/compendiums_all/WheatCultivationinIndiaPDF.pdf" }
+  - { source: ICAR, crop: paddy, topic: irrigation, state: null, title: "Water management for rice production systems (ICAR-NRRI Research Bulletin 32)", url: "https://icar-crri.in/wp-content/uploads/2026/07/RB-32.pdf" }
+  - { source: ICAR, crop: paddy, topic: seeding, state: null, title: "Hybrid rice seed production technology (ICAR-NRRI Research Bulletin 31)", url: "https://icar-crri.in/wp-content/uploads/2026/07/23.-Research-Bulletin-No-31-Hybrid-Rice-Seed-Production-Technology.pdf" }
+  - { source: ICAR, crop: cotton, topic: general, state: null, title: "Cotton technologies: 50 years of cotton research (ICAR-CICR)", url: "https://cicr.org.in/wp-content/uploads/2026/05/Cotton-Tech-book.pdf" }
+  - { source: ICAR, crop: pulses, topic: general, state: null, title: "Promising technologies for rainfed pigeonpea (ICAR-CRIDA)", url: "https://www.icar-crida.res.in/assets/img/Books/2005-06/Pigeonpea.pdf" }
+
+  # ======================================================================
+  # IMD: agromet advisories for Tamil Nadu (time-limited; refresh twice a week)
+  # ======================================================================
+  - { source: IMD, topic: weather, title: "Agromet advisory: Tamil Nadu state composite bulletin (IMD Chennai)", published_on: 2026-11-12, valid_until: 2026-11-16, url: "https://mausam.imd.gov.in/chennai/mcdata/agrocomp.pdf" }
+  - { source: IMD, topic: weather, title: "Block-level agromet advisory, Tamil Nadu (IMD Chennai)", published_on: 2026-11-12, valid_until: 2026-11-16, url: "https://mausam.imd.gov.in/chennai/mcdata/block_level.pdf" }
+
+  # ======================================================================
+  # KVK: packages of practice from Krishi Vigyan Kendra websites (Assam Agricultural University)
+  # (kvk.icar.gov.in no longer resolves)
+  # ======================================================================
+  - { source: KVK, crop: groundnut, topic: general, state: Assam, season: kharif, title: "Groundnut package of practices (KVK Chirang, AAU)", url: "https://kvkchirang.aau.ac.in/pdf/package_of_practice/kharif/Groundnut.pdf" }
+  - { source: KVK, topic: general, state: Assam, season: rabi, title: "Package of practices for rabi crops (KVK Dibrugarh, AAU)", url: "https://kvkdibrugarh.aau.ac.in/pp/rabi.pdf" }
+
+  # ======================================================================
+  # SHCP: Soil Health Card scheme and soil health management guidelines
+  # ======================================================================
+  - { source: SHCP, topic: soil, state: null, title: "National Mission for Sustainable Agriculture guidelines (DAC&FW)", url: "https://agritech.tnau.ac.in/pdf/NMSA_GDL.pdf" }
+  - { source: SHCP, topic: soil, state: null, title: "Soil Health Card scheme backgrounder (PIB, Jan 2026)", url: "https://static.pib.gov.in/WriteReadData/specificdocs/documents/2026/jan/doc2026131774901.pdf" }
