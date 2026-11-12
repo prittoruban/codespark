@@ -1,0 +1,57 @@
+# Knowledge-base manifest. Copy to ingest/sources.yaml and edit.
+#
+# Each entry is one page or PDF. `url` is required: it is the unique key and the
+# link shown on citations. Add `path` to read a local copy instead of downloading
+# (useful for PDFs you saved manually, or sites that block automated access).
+#
+# Before adding a site, read its terms of use and robots.txt. The fetcher obeys
+# robots.txt and waits 2 seconds between requests to the same host.
+#
+# Fields: source (ICAR|TNAU|IMD|SHCP|KVK|PPQS), url, path, title, language (en|hi|ta|te),
+#         state, district, season, crop, topic, published_on, valid_until (YYYY-MM-DD)
+
+defaults:
+  language: en
+  state: Tamil Nadu
+
+documents:
+  # Pipeline test document so `--dry-run` works immediately. It is never stored
+  # (example.org URLs are skipped). Delete it once you add real sources.
+  - source: TNAU
+    url: https://example.org/agrense-pipeline-sample
+    path: samples/pipeline-sample.html
+    crop: wheat
+
+  # ---- Templates: replace with real, verified URLs -------------------------
+  #
+  # TNAU Agritech Portal crop page (HTML):
+  # - source: TNAU
+  #   url: https://agritech.tnau.ac.in/...           # the exact page you verified
+  #   crop: paddy
+  #
+  # ICAR institute package-of-practices PDF, saved locally:
+  # - source: ICAR
+  #   url: https://<institute site>/<guide>.pdf     # where the PDF is published
+  #   path: data/manual/icar-wheat-pop.pdf
+  #   crop: wheat
+  #   state: null                                  # national guidance
+  #   published_on: 2025-10-01
+  #
+  # IMD district agromet advisory (expires):
+  # - source: IMD
+  #   url: https://<agromet bulletin URL>
+  #   district: Tiruvallur
+  #   topic: weather
+  #   published_on: 2026-11-11
+  #   valid_until: 2026-11-15
+  #
+  # PPQS / CIB&RC approved pesticide uses (the only source for pesticide doses):
+  # - source: PPQS
+  #   url: https://<PPQS / CIB&RC page or PDF>
+  #   state: null
+  #   topic: pest
+  #
+  # Tamil-language document:
+  # - source: TNAU
+  #   url: https://<tamil page>
+  #   language: ta
