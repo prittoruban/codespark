@@ -1,14 +1,23 @@
-# Knowledge base setup (Supabase + Gemini)
+# Knowledge base setup (Supabase + local embeddings)
 
 This connects Krishi AI to a real knowledge base built from ICAR, TNAU, IMD, SHCP, KVK and PPQS documents.
 
 ```
-ingest/ (Python)                                    Next.js app
-crawl → parse → chunk → tag → Gemini embeddings →   POST /api/rag
-                                   Supabase pgvector ← embed question (Gemini)
+ingest/ (Python)                                     Next.js app
+crawl → parse → chunk → tag → embeddings (bge-m3) →  POST /api/rag
+                                   Supabase pgvector ← embed question (same model)
                                                      ← hybrid_search (vector + keyword)
-                                                     → Gemini answer (JSON) → citation + dose checks
+                                                     → answer (Gemini by default, JSON) → citation + dose checks
 ```
+
+Providers are configurable in `.env.local`:
+
+| Setting | Options | Default |
+|---|---|---|
+| `EMBED_PROVIDER` | `ollama` (local, free, no rate limits), `gemini`, `openrouter` | `ollama` with `bge-m3` (multilingual, 1024 dims) |
+| `CHAT_PROVIDER` | `gemini`, `ollama` (local, slow on CPU), `openrouter` | `gemini` with `gemini-3.5-flash-lite` |
+
+The embedding provider and model must be the same for ingestion and for search. The ingester refuses to mix models in one database.
 
 Already built in the repo:
 
@@ -24,20 +33,26 @@ Already built in the repo:
 
 ### 1. Create the Supabase project
 1. Create a project at supabase.com. Choose the Mumbai region for lower latency in India.
-2. Apply the migration, either way works:
-   - **SQL Editor:** paste the contents of `supabase/migrations/20261112000000_rag_knowledge_base.sql` and run it.
+2. Apply the migrations **in order**, either way works:
+   - **SQL Editor:** paste and run `supabase/migrations/20261112000000_rag_knowledge_base.sql`, then `supabase/migrations/20261113000000_embedding_dim_1024.sql`.
    - **CLI:** `npx supabase login`, `npx supabase link --project-ref <your-ref>`, `npx supabase db push`.
 3. Check that the tables `documents` and `chunks` exist and that RLS shows as enabled on both.
 
-### 2. Collect the keys
+### 2. Install the local embedding model
+```bash
+ollama pull bge-m3
+```
+Ollama must be running (`ollama serve`, or the desktop app) whenever you ingest or the app answers questions.
+
+### 2b. Collect the keys
 - **Supabase:** Project Settings → API → copy the Project URL and the `service_role` key (newer projects call it the *secret* key). This key bypasses row-level security: keep it server-side only.
-- **Gemini:** create a key at Google AI Studio. Check that your key can use the embedding model in `GEMINI_EMBED_MODEL` and note the free-tier rate limits.
+- **Gemini (for answers):** create a key at Google AI Studio. Answer generation has its own free-tier limits, separate from embeddings.
 
 ### 3. Configure the environment
 ```bash
 cp .env.example .env.local
 ```
-Fill in `GEMINI_API_KEY`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Leave `NEXT_PUBLIC_RAG_PROVIDER=demo` until the corpus is loaded.
+Fill in `GEMINI_API_KEY`, `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, and keep `EMBED_PROVIDER=ollama`. Leave `NEXT_PUBLIC_RAG_PROVIDER=demo` until the corpus is loaded.
 
 ### 4. Set up Python
 ```bash
@@ -113,6 +128,8 @@ Schedule ingestion with cron or GitHub Actions:
 ### 11. Deploying
 Set the same variables in your hosting provider's environment settings, for example Vercel → Project → Settings → Environment Variables. Only `NEXT_PUBLIC_*` values may be exposed to the browser.
 
+Hosted platforms such as Vercel can't run Ollama, but every question must be embedded with the same `bge-m3` model used for ingestion. Point `OLLAMA_URL` at a server running Ollama, or host `bge-m3` elsewhere (for example Cloudflare Workers AI or Hugging Face) behind the same interface.
+
 ## Troubleshooting
 
 | Symptom | Cause / fix |
@@ -120,12 +137,17 @@ Set the same variables in your hosting provider's environment settings, for exam
 | `/api/rag` returns 503 `not_configured` | A key is missing from `.env.local`, or the server wasn't restarted |
 | App still shows demo answers | `NEXT_PUBLIC_RAG_PROVIDER` isn't `supabase`, or the server wasn't restarted; check the browser console for a fallback warning |
 | `permission denied for function hybrid_search` | You used the anon key; use the service_role key |
-| `expected 1536 dimensions` | The embedding model doesn't support `outputDimensionality`; choose a Gemini embedding model that does |
+| `returned N dimensions; the database expects 1024` | The embedding model's output size differs; use `bge-m3`, or a model/provider that supports 1024 dimensions |
+| `Can't reach Ollama` / model not found | Start Ollama (`ollama serve`) and run `ollama pull bge-m3` |
+| `contains chunks embedded with ...` | The tables hold vectors from another model; clear them (below) before re-ingesting |
+| Gemini 429 during ingestion | Free-tier limit of 30,000 tokens/minute; use `EMBED_PROVIDER=ollama`, or set `EMBED_TOKENS_PER_MINUTE=25000` |
 | Model not found (404) | Update `GEMINI_EMBED_MODEL` / `GEMINI_CHAT_MODEL` to a model your key can access |
 | `no usable text found` | Scanned PDF: install Tesseract (step 4) |
 | Garbled Tamil or Hindi in previews | Same as above: OCR fixes broken PDF text layers |
-| Gemini 429 errors | Rate limit; the ingester retries with backoff. Ingest in smaller batches with `--only` |
 | Answer says "check the product label" instead of a dose | Working as intended: pesticide doses need a cited PPQS passage. Add the PPQS document |
 
 ## Changing the embedding model later
-The model and dimension are stored on every chunk (`embed_model`). To switch models, update `GEMINI_EMBED_MODEL` and run `python -m ingest.run --force` so every chunk is re-embedded. Mixed models in one table return poor search results.
+The provider, model and dimension are stored on every chunk (`embed_model`, e.g. `ollama:bge-m3@1024`). To switch models:
+1. Clear the tables in the Supabase SQL Editor: `delete from documents;` (chunks are removed with them).
+2. Update `EMBED_PROVIDER` / `EMBED_MODEL`. If the new model's size isn't 1024, the column and `EMBED_DIM` must change too (write a migration like `20261113000000_embedding_dim_1024.sql`).
+3. Run `python -m ingest.run` again.
