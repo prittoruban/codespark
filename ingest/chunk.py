@@ -9,6 +9,7 @@ Rules:
 from __future__ import annotations
 
 import math
+import re
 from dataclasses import dataclass
 
 from .parse import Block, ParsedDoc
@@ -37,7 +38,9 @@ class Chunk:
 
 def _split_table(md: str) -> list[str]:
     lines = md.split("\n")
-    header, rows = lines[:2], lines[2:]
+    # Repeat any lead-in lines ("Columns: ..." or a section title) plus the markdown header.
+    first_row = next((i for i, line in enumerate(lines) if line.startswith("|")), 0)
+    header, rows = lines[: first_row + 2], lines[first_row + 2 :]
     parts, current = [], []
     for row in rows:
         candidate = "\n".join(header + current + [row])
@@ -102,6 +105,28 @@ def chunk(doc: ParsedDoc) -> list[Chunk]:
             if buffered_tokens() >= TARGET_TOKENS:
                 flush()
     flush()
+
+    # Safety cap: split anything still far over the limit (e.g. a table row of prose).
+    capped: list[Chunk] = []
+    for c in chunks:
+        if c.tokens <= MAX_TOKENS * 1.5:
+            capped.append(c)
+            continue
+        piece: list[str] = []
+        for line in re.split(r"(?<=[.!?।])\s+|\n", c.content):
+            if piece and estimate_tokens(" ".join(piece + [line])) > MAX_TOKENS:
+                text = "\n".join(piece)
+                capped.append(Chunk(0, c.heading, text, estimate_tokens(text)))
+                piece = []
+            while estimate_tokens(line) > MAX_TOKENS:  # a single huge line: hard split
+                cut = len(line) * MAX_TOKENS // estimate_tokens(line)
+                capped.append(Chunk(0, c.heading, line[:cut], estimate_tokens(line[:cut])))
+                line = line[cut:]
+            piece.append(line)
+        if piece:
+            text = "\n".join(piece)
+            capped.append(Chunk(0, c.heading, text, estimate_tokens(text)))
+    chunks = capped
 
     # Drop near-empty fragments (menus, page numbers) that survive parsing.
     kept = [c for c in chunks if c.tokens >= 25 or "\n| ---" in c.content]

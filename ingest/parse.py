@@ -76,7 +76,117 @@ def table_to_markdown(rows: list[list[str | None]]) -> str:
     return "\n".join(lines)
 
 
+_HEADER_WORD = re.compile(r"\b(crop|commodity|dosage|dose|waiting|pest|disease|weed|formulation|dilution|a\.?\s?i\.?|name)\b", re.I)
+_NUMERIC = re.compile(r"^[\d.,\s\-–/%]+$")
+
+
+def _is_header_row(row: list[str]) -> bool:
+    cells = [c for c in row if c]
+    if len(cells) < 2:
+        return False
+    keyword_cells = sum(1 for c in cells if _HEADER_WORD.search(c))
+    # Column labels are short and carry no values ("Dosage/ha", not "Dosage: 10 g/m3").
+    has_values = any(re.search(r"\d", c) or len(c) > 90 for c in cells)
+    return keyword_cells >= 2 and not has_values
+
+
+def _merge_header(top: list[str], sub: list[str] | None) -> list[str]:
+    """Combine a two-row header (e.g. 'Dosage/ha' spanning 'a.i (gm)' | 'Formulation') into one row."""
+    if not sub:
+        return top
+    merged, span = [], ""
+    for t, b in zip(top, sub):
+        span = t or span
+        if b:
+            merged.append(f"{span}: {b}" if span and span != b else b)
+        else:
+            merged.append(t)
+    return merged
+
+
+class TableHeaders:
+    """Carries a table's column labels onto continuation tables on later pages.
+
+    Large compilations (e.g. PPQS major-uses lists) print the header once; without it,
+    later rows are bare numbers and a dose can't be told apart from a waiting period.
+    pdfplumber also splits columns differently per page, so all-empty columns are
+    dropped first; if the column count still differs, a "Columns:" key is prefixed.
+    """
+
+    def __init__(self) -> None:
+        self.labels: list[str] | None = None
+
+    @staticmethod
+    def _drop_empty_columns(rows: list[list[str]]) -> list[list[str]]:
+        width = max(len(r) for r in rows)
+        rows = [r + [""] * (width - len(r)) for r in rows]
+        keep = [i for i in range(width) if any(r[i] for r in rows)]
+        return [[r[i] for i in keep] for r in rows]
+
+    def to_markdown(self, raw: list[list[str | None]]) -> str:
+        rows = [[clean(c or "").replace("\n", " ") for c in row] for row in raw if row and any(c for c in row)]
+        if not rows:
+            return ""
+        rows = self._drop_empty_columns(rows)
+
+        # A header may sit below a section title row ("Agricultural Use").
+        for i in range(min(3, len(rows))):
+            if _is_header_row(rows[i]):
+                nxt = rows[i + 1] if i + 1 < len(rows) else None
+                is_sub = nxt is not None and not any(re.search(r"\d", c) for c in nxt if c) and any(_HEADER_WORD.search(c) or "(" in c for c in nxt if c)
+                labels = [c for c in _merge_header(rows[i], nxt if is_sub else None)]
+                # Only the main crop table header is inherited by continuation tables;
+                # side tables (wood treatment, stored grain) label themselves only.
+                if any(re.search(r"\bcrops?\b", c, re.I) for c in labels):
+                    self.labels = labels
+                lead = [" ".join(c for c in r if c) for r in rows[:i]]  # section titles above the header
+                body = rows[i + (2 if is_sub else 1):]
+                md = table_to_markdown([labels] + body)
+                return "\n".join(lead + [md]) if lead else md
+
+        if self.labels:
+            if len(self.labels) == len(rows[0]):
+                return table_to_markdown([self.labels] + rows)
+            key = "Columns: " + " | ".join(l for l in self.labels if l)
+            return key + "\n" + table_to_markdown(rows)
+        return table_to_markdown(rows)
+
+
 # ---------------------------------------------------------------- HTML
+
+
+_TEXT_BLOCKS = {"p", "li", "dd", "dt", "td", "th", "div", "blockquote", "pre", "section", "article", "center", "font"}
+_HEADINGS = {"h1": 1, "h2": 2, "h3": 3, "h4": 4, "h5": 4, "h6": 4}
+_BLOCKS = _TEXT_BLOCKS | set(_HEADINGS) | {"table", "ul", "ol", "body", "main"}
+
+
+def _is_data_table(table) -> bool:
+    """True for real data tables; False for tables used for page layout.
+
+    Older sites (e.g. TNAU Agritech) nest tables to lay out the whole page. Treating
+    those as data tables duplicates the page at every nesting level.
+    """
+    if table.find("table"):
+        return False
+    rows = table.find_all("tr")
+    if len(rows) < 2:
+        return False
+    cells = table.find_all(["td", "th"])
+    if not cells or max(len(c.get_text(" ", strip=True)) for c in cells) > 400:
+        return False
+    return not table.find(["p", "ul", "ol", "h1", "h2", "h3", "h4"]) or len(cells) >= 6
+
+
+def _own_text(el) -> str:
+    """Text whose nearest block ancestor is `el`: each string is emitted exactly once."""
+    parts = []
+    for string in el.find_all(string=True):
+        parent = string.parent
+        while parent is not None and parent is not el and parent.name not in _BLOCKS:
+            parent = parent.parent
+        if parent is el:
+            parts.append(str(string))
+    return clean(" ".join(parts))
 
 
 def parse_html(raw: bytes) -> ParsedDoc:
@@ -85,33 +195,32 @@ def parse_html(raw: bytes) -> ParsedDoc:
         tag.decompose()
     title = clean(soup.title.get_text()) if soup.title else ""
     body = soup.find("main") or soup.find("article") or soup.body or soup
+    data_tables = {id(t) for t in body.find_all("table") if _is_data_table(t)}
+
+    def inside_data_table(el) -> bool:
+        return any(id(t) in data_tables for t in el.find_parents("table"))
+
     blocks: list[Block] = []
-    for el in body.find_all(["h1", "h2", "h3", "h4", "p", "li", "table", "dd"], recursive=True):
-        # Skip elements nested inside a table (handled with the table) or inside list items.
-        if el.name != "table" and el.find_parent("table"):
+    for el in body.find_all(list(_BLOCKS - {"ul", "ol", "body", "main"}), recursive=True):
+        if inside_data_table(el):
             continue
         if el.name == "table":
-            rows = [[cell.get_text(" ", strip=True) for cell in tr.find_all(["th", "td"])] for tr in el.find_all("tr")]
-            md = table_to_markdown(rows)
-            if md:
-                blocks.append(Block("table", md))
-        elif el.name in ("h1", "h2", "h3", "h4"):
+            if id(el) in data_tables:
+                rows = [[cell.get_text(" ", strip=True) for cell in tr.find_all(["th", "td"])] for tr in el.find_all("tr")]
+                md = table_to_markdown(rows)
+                if md:
+                    blocks.append(Block("table", md))
+            continue
+        if el.name in _HEADINGS:
             text = clean(el.get_text(" "))
             if text:
-                blocks.append(Block("heading", text, int(el.name[1])))
-        else:
-            if el.name == "p" and el.find_parent("li"):
-                continue
-            if el.name == "li" and el.find(["li", "ul", "ol"]):
-                # Nested list: keep only this item's own text; children are visited separately.
-                text = clean(" ".join(el.find_all(string=True, recursive=False)))
-            else:
-                text = clean(el.get_text(" "))
-            if len(text) > 2:
-                blocks.append(Block("text", ("- " if el.name == "li" else "") + text))
+                blocks.append(Block("heading", text, _HEADINGS[el.name]))
+            continue
+        text = _own_text(el)
+        if len(text) > 2:
+            blocks.append(Block("text", ("- " if el.name == "li" else "") + text))
     if not title:
-        first = next((b.text for b in blocks if b.kind == "heading"), "")
-        title = first
+        title = next((b.text for b in blocks if b.kind == "heading"), "")
     return ParsedDoc(title, blocks)
 
 
@@ -167,6 +276,7 @@ def parse_pdf(raw: bytes, language: str = "en") -> ParsedDoc:
     prefer_ocr = language in ("hi", "ta", "te") and _ocr_available()
     if language in ("hi", "ta", "te") and not prefer_ocr:
         print("    warning: Indic PDF without OCR. Text may lose characters; install Tesseract (see docs/rag-setup.md)")
+    headers = TableHeaders()
     with pdfplumber.open(BytesIO(raw)) as pdf:
         meta_title = (pdf.metadata or {}).get("Title") or ""
         repeated = _repeated_lines(pdf) if len(pdf.pages) >= 3 else set()
@@ -230,7 +340,7 @@ def parse_pdf(raw: bytes, language: str = "en") -> ParsedDoc:
             flush()
 
             for t in tables:
-                md = table_to_markdown(t.extract())
+                md = headers.to_markdown(t.extract())
                 if md:
                     blocks.append(Block("table", md))
     if ocr_pages:
