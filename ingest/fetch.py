@@ -38,12 +38,19 @@ def _allowed(url: str) -> bool:
     parts = urlparse(url)
     base = f"{parts.scheme}://{parts.netloc}"
     if base not in _robots:
+        # RobotFileParser.read() has no timeout and can hang forever on a dead
+        # connection, so fetch robots.txt ourselves with one.
         rp = urllib.robotparser.RobotFileParser()
-        rp.set_url(f"{base}/robots.txt")
         try:
-            rp.read()
+            resp = requests.get(f"{base}/robots.txt", headers={"User-Agent": USER_AGENT}, timeout=15)
+            if resp.status_code in (401, 403):
+                rp.disallow_all = True
+            elif resp.ok:
+                rp.parse(resp.text.splitlines())
+            else:
+                rp.allow_all = True  # no robots.txt: everything allowed
             _robots[base] = rp
-        except Exception:
+        except requests.RequestException:
             _robots[base] = None  # robots.txt unreachable: proceed carefully
     rp = _robots[base]
     return rp is None or rp.can_fetch(USER_AGENT, url)
