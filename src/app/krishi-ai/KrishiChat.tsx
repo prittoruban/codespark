@@ -63,7 +63,7 @@ export function KrishiChat() {
             </span>
             <div>
               <h1 className="font-display text-[19px] font-semibold leading-tight text-ink">Krishi AI</h1>
-              <p className="text-[12.5px] text-muted">Grounded agricultural advisory · {KNOWLEDGE_BASE.length} verified documents</p>
+              <p className="text-[12.5px] text-muted">Agricultural advisory · ICAR, TNAU, PPQS, IMD, KVK & SHC sources</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -174,7 +174,7 @@ export function KrishiChat() {
                     ))}
                   </ul>
                 ) : (
-                  <Badge tone="progress">No matching source found</Badge>
+                  <Badge tone="neutral">General guidance (no specific source)</Badge>
                 )}
               </div>
             </div>

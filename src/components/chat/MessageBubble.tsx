@@ -58,6 +58,11 @@ export function MessageBubble({ message, onFollowUp, speakingId, setSpeakingId }
             </div>
           )}
           <Markdown text={message.content} />
+          {message.general && (
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-ivory px-2.5 py-1 text-[11.5px] font-medium text-muted ring-1 ring-line">
+              <Sparkles className="size-3" aria-hidden /> General guidance
+            </p>
+          )}
 
           {!!message.citations?.length && (
             <div className="mt-4 border-t border-line pt-3">

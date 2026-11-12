@@ -186,10 +186,10 @@ export const KNOWLEDGE_BASE: KnowledgeChunk[] = [
 
 /** Canned replies when nothing relevant is retrieved. */
 export const FALLBACK_ANSWER: Record<Language, string> = {
-  en: "I couldn't find a confident answer in the agricultural knowledge base for that. Try naming the crop and the symptom or practice, for example *“wheat yellow leaves at tillering”*, or ask your local Krishi Vigyan Kendra.",
-  hi: "इस प्रश्न के लिए ज्ञान आधार में भरोसेमंद उत्तर नहीं मिला। फसल और लक्षण बताकर दोबारा पूछें, या नजदीकी कृषि विज्ञान केंद्र से संपर्क करें।",
-  ta: "இந்தக் கேள்விக்கு அறிவுத் தளத்தில் நம்பகமான பதில் கிடைக்கவில்லை. பயிர் மற்றும் அறிகுறியைக் குறிப்பிட்டு மீண்டும் கேளுங்கள், அல்லது அருகிலுள்ள வேளாண் அறிவியல் நிலையத்தை அணுகவும்.",
-  te: "ఈ ప్రశ్నకు జ్ఞాన భాండారంలో నమ్మకమైన సమాధానం దొరకలేదు. పంట మరియు లక్షణం చెప్పి మళ్ళీ అడగండి, లేదా దగ్గరలోని కృషి విజ్ఞాన కేంద్రాన్ని సంప్రదించండి.",
+  en: "To give you precise advice, tell me the crop, its stage and what you are seeing, for example *“wheat leaves turning yellow at tillering”*. Your local Krishi Vigyan Kendra can also inspect the field and recommend the right steps.",
+  hi: "सटीक सलाह के लिए फसल, उसकी अवस्था और दिख रहे लक्षण बताएं, जैसे *“कल्ले निकलते समय गेहूं की पत्तियां पीली”*। नजदीकी कृषि विज्ञान केंद्र भी खेत देखकर सही उपाय बता सकता है।",
+  ta: "துல்லியமான ஆலோசனைக்கு பயிர், அதன் பருவம் மற்றும் தெரியும் அறிகுறியைச் சொல்லுங்கள், உதாரணமாக *“தூர் கட்டும் பருவத்தில் கோதுமை இலைகள் மஞ்சளாகின்றன”*. அருகிலுள்ள வேளாண் அறிவியல் நிலையமும் வயலைப் பார்வையிட்டு சரியான வழிகளைப் பரிந்துரைக்கும்.",
+  te: "ఖచ్చితమైన సలహా కోసం పంట, దాని దశ మరియు కనిపిస్తున్న లక్షణాన్ని చెప్పండి, ఉదాహరణకు *“పిలకల దశలో గోధుమ ఆకులు పసుపు రంగుకు మారుతున్నాయి”*. దగ్గరలోని కృషి విజ్ఞాన కేంద్రం కూడా పొలాన్ని పరిశీలించి సరైన చర్యలు సూచిస్తుంది.",
 };
 
 export const SUGGESTED_PROMPTS: Record<Language, string[]> = {

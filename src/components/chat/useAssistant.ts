@@ -66,6 +66,7 @@ export function useAssistant(lang: Language) {
           citations: out.citations,
           tools,
           followUps: out.followUps,
+          general: out.general,
         };
         setMessages((m) => [...m, assistantMsg]);
         return assistantMsg;

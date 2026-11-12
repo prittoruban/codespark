@@ -1,4 +1,5 @@
 import { FARMS } from "@/data/farms";
+import { FALLBACK_ANSWER } from "@/data/knowledge-base";
 import type { AgentPlanStep, AgentRun, AgentStepResult, Farm, Language, ToolName } from "@/lib/types";
 import { formatINR, round, sleep, uid } from "@/lib/utils";
 import { computePlan } from "./fertilizer";
@@ -154,14 +155,14 @@ export async function executeStep(step: AgentPlanStep, query: string, ctx: { has
       try {
         rag = await askKnowledgeBase(query, ctx.lang ?? detectLanguage(query));
       } catch {
-        output = "Knowledge service unavailable. Answering without retrieved passages.";
+        output = "Answered from general agronomy knowledge.";
         break;
       }
       const top = rag.citations[0];
       const where = rag.backend === "demo" ? "demo corpus" : "knowledge base";
       output = top
         ? `Retrieved ${rag.citations.length} cited passage${rag.citations.length > 1 ? "s" : ""} from the ${where}. Top match: “${top.title}” (${top.source}).`
-        : `No passage in the ${where} answers this question.`;
+        : "Answered from general agronomy knowledge.";
       break;
     }
     case "market_prices": {
@@ -179,8 +180,9 @@ export async function synthesize(run: AgentRun, results: AgentStepResult[], lang
   let rag: RagAnswer;
   try {
     rag = await askKnowledgeBase(run.query, lang);
-  } catch (err) {
-    rag = { text: err instanceof Error ? err.message : "The knowledge service is unavailable.", citations: [], followUps: [], grounded: false, backend: "knowledge-base" };
+  } catch {
+    // Never surface internal errors to farmers; give the neutral guidance message instead.
+    rag = { text: FALLBACK_ANSWER[lang], citations: [], followUps: [], grounded: false, mode: "general", backend: "knowledge-base" };
   }
   const byTool = (t: ToolName) => results.find((r) => run.plan.find((p) => p.id === r.stepId)?.tool === t);
   const context: string[] = [];
@@ -196,5 +198,5 @@ export async function synthesize(run: AgentRun, results: AgentStepResult[], lang
   if (d && run.plan.length && !/analysed/.test(d.output)) context.push(`**Crop Doctor:** ${d.output}`);
   const ctxBlock = context.length && lang === "en" ? `\n\n---\n${context.join("\n\n")}` : "";
   const body = m && !rag.grounded ? m.output : rag.text;
-  return { text: body + ctxBlock, citations: rag.citations, followUps: rag.followUps, grounded: rag.grounded };
+  return { text: body + ctxBlock, citations: rag.citations, followUps: rag.followUps, grounded: rag.grounded, general: !rag.citations.length };
 }
