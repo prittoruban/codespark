@@ -1,0 +1,12 @@
+# AGRENSE knowledge-base ingestion (Python 3.11+)
+requests>=2.32
+beautifulsoup4>=4.12
+pdfplumber>=0.11
+PyYAML>=6.0
+python-dotenv>=1.0
+google-genai>=1.0
+supabase>=2.10
+
+# Optional: OCR for scanned PDFs. Also needs the Tesseract binary with
+# eng, hin, tam and tel language packs (see docs/rag-setup.md).
+# pytesseract>=0.3
