@@ -66,3 +66,14 @@ export function finaliseCitations(answer: string, declared: number[], passages: 
   return { text: text.trim(), citations };
 }
 
+
+/**
+ * Puts bullet points on their own lines. Models sometimes return
+ * "Intro sentence. - point one. - point two." as a single line.
+ */
+export function normaliseBullets(text: string): string {
+  let out = text.replace(/([.!?।:)\]])\s*[-•]\s+(?=\S)/g, "$1\n- ");
+  // Blank line between an opening paragraph and the list that follows it.
+  out = out.replace(/([^\n])\n(- )/, "$1\n\n$2");
+  return out.trim();
+}

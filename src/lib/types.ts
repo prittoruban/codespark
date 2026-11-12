@@ -190,6 +190,7 @@ export interface ChatMessage {
   citations?: Citation[];
   tools?: ToolCall[];
   followUps?: string[];
+  general?: boolean; // answered from general knowledge, no sources
 }
 
 /* ---------- Agent ---------- */
@@ -254,5 +255,6 @@ export interface RagAnswer {
   citations: Citation[];
   followUps: string[];
   grounded: boolean;
+  mode?: "grounded" | "general"; // general = model answer without knowledge-base sources
   backend: "knowledge-base" | "demo";
 }
