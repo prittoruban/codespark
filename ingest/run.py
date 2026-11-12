@@ -51,6 +51,8 @@ def main() -> int:
         from .store import Store
 
         embedder, store = Embedder(settings), Store(settings)
+        store.check_model(settings.embed_model_tag)
+        print(f"Embedding with {settings.embed_model_tag}\n")
 
     stats = Counter()
     failures: list[str] = []

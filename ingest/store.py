@@ -17,6 +17,15 @@ class Store:
     def __init__(self, settings: Settings):
         self.db: Client = create_client(settings.supabase_url, settings.supabase_key)
 
+    def check_model(self, model_tag: str) -> None:
+        """Refuse to mix embedding models in one table: their vectors aren't comparable."""
+        res = self.db.table("chunks").select("embed_model").neq("embed_model", model_tag).limit(1).execute()
+        if res.data:
+            raise SystemExit(
+                f"The knowledge base contains chunks embedded with {res.data[0]['embed_model']}, but this run uses {model_tag}.\n"
+                "Mixing models breaks search. Clear the tables (see docs/rag-setup.md) or switch back to the original model."
+            )
+
     def existing_hash(self, url: str) -> str | None:
         res = self.db.table("documents").select("content_hash").eq("url", url).limit(1).execute()
         return res.data[0]["content_hash"] if res.data else None
