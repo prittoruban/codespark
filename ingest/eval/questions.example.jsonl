@@ -1,0 +1,6 @@
+{"question": "How much nitrogen should I apply to wheat at tillering?", "lang": "en", "crop": "wheat", "expect_any": ["nitrogen", "tillering"]}
+{"question": "My paddy has circular dried patches near the base. What should I do?", "lang": "en", "crop": "paddy", "expect_any": ["planthopper", "hopperburn"]}
+{"question": "How do I correct acidic soil before sowing?", "lang": "en", "expect_any": ["lime", "acidic"]}
+{"question": "गेहूं में यूरिया कब डालें?", "lang": "hi", "crop": "wheat", "expect_any": ["urea", "nitrogen"]}
+{"question": "நிலக்கடலைக்கு ஜிப்சம் எப்போது இட வேண்டும்?", "lang": "ta", "crop": "groundnut", "expect_any": ["gypsum"]}
+{"question": "మొక్కజొన్నలో కత్తెర పురుగు నివారణ ఎలా?", "lang": "te", "crop": "maize", "expect_any": ["armyworm"]}
